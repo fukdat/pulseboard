@@ -1,66 +1,66 @@
 # PulseBoard
 
-An **e-commerce analytics & KPI cockpit** for small online stores. Point it at
-your order history and it computes the metrics that actually drive decisions —
-revenue trends, cohort retention, customer LTV, churn, repeat-purchase rate and
-low-stock alerts — and serves them through an API and a live dashboard.
+**Аналитика и KPI-кокпит для e-commerce** для небольших онлайн-магазинов. Направьте
+его на историю заказов — и он посчитает метрики, которые реально влияют на решения:
+тренды выручки, когортное удержание, LTV клиентов, отток, долю повторных покупок и
+оповещения о низких остатках — и отдаст их через API и живой дашборд.
 
-> Portfolio note: the analytics are implemented as a **pure, fully-typed engine**
-> (cohort matrices, LTV, churn from first principles), not hidden inside a
-> dataframe — every metric is deterministic and unit-tested to exact values.
+> Заметка для портфолио: аналитика реализована как **чистый, полностью типизированный
+> движок** (когортные матрицы, LTV, отток с нуля), а не спрятана внутри dataframe —
+> каждая метрика детерминирована и покрыта unit-тестами до точных значений.
 
-## Stack
+## Стек
 
-- **Python 3.12** · **FastAPI** · pure-Python analytics engine
+- **Python 3.12** · **FastAPI** · чисто-питоновский аналитический движок
 - **pytest** · **ruff** · **mypy --strict** · **Docker** · **GitHub Actions**
-- Dashboard: single-file HTML + **Chart.js**
+- Дашборд: однофайловый HTML + **Chart.js**
 
-## Architecture
+## Архитектура
 
 ```
 app/
-  domain/       Order, OrderLine, Product (money in integer cents)
-  analytics/    engine.py — pure metric functions + typed result models
-  etl/          csv_loader.py — tolerant, idempotent CSV ingestion
-  api/          FastAPI app, in-memory store + deterministic demo seed
-  static/       index.html — the dashboard cockpit
+  domain/       Order, OrderLine, Product (деньги в целых центах)
+  analytics/    engine.py — чистые функции метрик + типизированные модели результатов
+  etl/          csv_loader.py — толерантный, идемпотентный приём CSV
+  api/          FastAPI-приложение, in-memory хранилище + детерминированный demo-сид
+  static/       index.html — дашборд-кокпит
 ```
 
-The engine is the product: deterministic functions over `list[Order]`. The store
-and CSV loaders feed it; in production they are replaced by a warehouse
-(Postgres/BigQuery) and a scheduled ETL — the engine does not change.
+Движок — это и есть продукт: детерминированные функции над `list[Order]`. Хранилище
+и CSV-загрузчики его питают; в продакшене они заменяются на хранилище данных
+(Postgres/BigQuery) и плановый ETL — движок не меняется.
 
-### Metrics
+### Метрики
 
-- Revenue / order count / AOV by day or month
-- New vs returning customers per month
-- **Cohort retention matrix** (first-order month × months-since-acquisition)
-- Customer LTV and average LTV
-- **Churn rate** (trailing-window) and repeat-purchase rate
-- Top products by revenue
-- Low-stock reorder alerts
+- Выручка / число заказов / AOV по дням или месяцам
+- Новые и вернувшиеся клиенты по месяцам
+- **Матрица когортного удержания** (месяц первого заказа × месяцы с момента привлечения)
+- LTV клиента и средний LTV
+- **Уровень оттока** (скользящее окно) и доля повторных покупок
+- Топ-товары по выручке
+- Оповещения о дозаказе при низких остатках
 
-## Run
+## Запуск
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 uvicorn app.api.main:app --reload
-# Dashboard:  http://127.0.0.1:8000/
-# API docs:   http://127.0.0.1:8000/docs
+# Дашборд:    http://127.0.0.1:8000/
+# API-докинг: http://127.0.0.1:8000/docs
 ```
 
-The app boots with a seeded six-month demo dataset, so the dashboard is
-populated immediately.
+Приложение стартует с засеянным demo-датасетом за шесть месяцев, поэтому дашборд
+заполнен сразу.
 
-### Ingest your own data
+### Загрузить свои данные
 
 ```bash
 curl -F file=@orders.csv http://127.0.0.1:8000/ingest/orders
-# CSV columns: order_id,customer_id,ordered_at,sku,quantity,unit_price_cents
+# Колонки CSV: order_id,customer_id,ordered_at,sku,quantity,unit_price_cents
 ```
 
-## Quality gates
+## Гейты качества
 
 ```bash
 ruff check app tests
@@ -68,13 +68,13 @@ mypy app
 pytest -q
 ```
 
-## Roadmap
+## Дорожная карта
 
-- [ ] Postgres warehouse + scheduled ETL (Airflow/cron)
-- [ ] Predictive LTV and churn (survival model)
-- [ ] Daily email digest of KPIs and alerts
-- [ ] Multi-store / multi-currency support
+- [ ] Хранилище на Postgres + плановый ETL (Airflow/cron)
+- [ ] Прогнозный LTV и отток (модель выживаемости)
+- [ ] Ежедневный email-дайджест KPI и оповещений
+- [ ] Поддержка нескольких магазинов / мультивалютность
 
-## License
+## Лицензия
 
 MIT
